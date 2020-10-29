@@ -1,20 +1,18 @@
 <template>
   <div id="app">
     <Header :categoryLabels="responseResult_menu_data" />
-      <Filters :filterData="responseResult_product_data" />
+      <router-view />
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import Header from "@/components/Header.vue";
-import Filters from "@/components/Filters.vue";
 
 export default {
   name: "App",
   components: {
     Header,
-    Filters,
   },
   data() {
     return {
@@ -32,19 +30,12 @@ export default {
       .get(this.api_url_menu_data)
       .then(response => {
         this.responseResult_menu_data = response.data.result;
+        console.log(response);
       })
       .catch(error => {
         console.log(error);
       });
-
-    axios
-      .get(this.api_url_product_data)
-      .then(response => {
-        this.responseResult_product_data = response.data;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      // this.$router.push('/category/men-topwear-t-shirt&filter=')
   }
 };
 </script>

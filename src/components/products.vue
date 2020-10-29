@@ -8,7 +8,7 @@
     <div class="row" style="margin-right: 15px;">
         <div
           class="col-3"
-          v-for="(productItems, index) in data"
+          v-for="(productItems, index) in computedData"
           :key="index"
           style="margin-bottom: 10px;"
         >
@@ -42,17 +42,23 @@ export default {
           count: 1
       }
   },
+  computed: {
+    computedData: function () {
+      return this.data;
+    }
+  },
   watch: {
       filterOptions() {
-          console.log("wfrwf");
-          this.data.push(this.productData.result.products);
+          this.data = this.productData.result.products;
+      },
+      productData() {
+        this.data = this.productData.result.products;
       }
   },
   mounted() {
       for(var i = 0; i < this.productData.result.products.length; i++) {
           this.data.push(this.productData.result.products[i]);
       }
-    console.log(this.data);
   },
   methods: {
     loadMore: function() {
@@ -60,11 +66,12 @@ export default {
       this.count++
 
       axios.get("https://v2pim.greenhonchos.com/pim/pimresponse.php/?service=category&store=1&url_key=men-topwear-t-shirt&page="+ this.count +"&count=15&sort_by=&sort_dir=desc&filter=" + this.filterOptions).then((responseResult_product_data) => {
-          console.log(responseResult_product_data.data.result.products);
           for(var i = 0; i < responseResult_product_data.data.result.products.length; i++) {
                 this.data.push(responseResult_product_data.data.result.products[i]);
             }
-          this.busy = false;
+            if(responseResult_product_data.data.result.products.length > 10) {
+              this.busy = false;
+            }
       })
     }
   }

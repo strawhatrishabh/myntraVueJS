@@ -4,7 +4,7 @@
       <a class="navbar-brand" style="margin-left: 2%;">
         <img src="@/assets/images/logo.png" alt="V2 Kart" title="V2 Kart" />
       </a>
-      <button
+      <!-- <button
         class="navbar-toggler"
         type="button"
         data-toggle="collapse"
@@ -14,12 +14,24 @@
         aria-label="Toggle navigation"
       >
         <span class="navbar-toggler-icon"></span>
-      </button>
+      </button> -->
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item" v-for="(category, index) in categoryLabels" :key="index">
-            <a class="desktop-main" href="#">{{category.name}}</a>
+            <a id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="desktop-main" href="#">{{category.name}}</a>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="margin-left: 100px;">
+              <div class="container">
+                <div class="row">
+                  <div class="col-md-3" v-for="(categoryChild, indexChild) in category.childs" :key="indexChild">
+                    <span class="categoryChildClass">{{categoryChild.name}}</span>
+                    <div v-for="(categoryGrandChild, indexGrandChild) in categoryChild.childs" :key="indexGrandChild">
+                      <span>{{categoryGrandChild.name}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </li>
         </ul>
         <div class="desktop-query" data-reactid="693">
@@ -239,5 +251,9 @@ a.desktop-submit {
 }
 .header {
     text-align: center;
+}
+.categoryChildClass {
+  font-weight: 600;
+  color: #bf1616;
 }
 </style>

@@ -13,6 +13,7 @@
     </div>
 <div class="row">
   <div class="col-sm-3">
+    <span>Checked names: {{ checkedNames }}</span>
       <range-slider
         class="slider"
         min="10"
@@ -29,8 +30,7 @@
         <span style="margin-left: 20px; font-weight: 700;">{{filters.filter_lable}}</span>
         <ul>
           <li v-for="(filterOptions,indexOptions) in filters.options" :key="indexOptions">
-              <div>
-            <input type="checkbox" class="form-check-input" :id="indexOptions" @click="applyFilter(filterOptions)" />
+            <input type="checkbox" class="form-check-input" :id="indexOptions" :value="filterOptions" v-model="checkedNames">
             <svg
               width="1em"
               height="1em"
@@ -44,18 +44,17 @@
             >
               <circle cx="8" cy="8" r="8" />
             </svg>
-            <!-- <span data-colorhex="black" class="colour-label colour-colorDisplay" style="background-color: rgb(54, 69, 79);"></span> -->
-            <label
-              class="form-check-label"
-              :for="indexOptions"
-              style="font-size: 14px;"
-            >{{filterOptions.value}}</label>
-            </div>
+            <label style="font-size: 14px;" class="form-check-label" for="jack">{{filterOptions.value}}</label>
+            <!-- <input type="checkbox" id="john" value="John" v-model="checkedNames">
+            <label for="john">John</label>
+            <input type="checkbox" id="mike" value="Mike" v-model="checkedNames">
+            <label for="mike">Mike</label> -->
+            <br>
           </li>
         </ul>
       </div>
     </div>
-    <Products :productData="responseResult_product_data" :filterOptions="axiosFinalFilterOptions" />
+    <Products :productData="responseResult_product_data" :filterOptions="queryStringFilters" />
   </div>
   </div>
 </template>
@@ -72,13 +71,13 @@ export default {
     return {
       sliderValue: [20, 70],
       api_url_product_data:
-        "https://v2pim.greenhonchos.com/pim/pimresponse.php/?service=category&store=1&url_key=men-topwear-t-shirt&page=1&count=15&sort_by=&sort_dir=desc&filter=",
+        "https://v2pim.greenhonchos.com/pim/pimresponse.php/?service=category&store=1&page=1&count=15&sort_by=&sort_dir=desc&url_key=",
       selectedFiltersValueKey: [],
       selectedFilterCode: [],
       axiosFinalFilterOptions: [],
-    //   api_url_product_data:
-    //     "https://v2pim.greenhonchos.com/pim/pimresponse.php/?service=category&store=1&url_key=men-topwear-t-shirt&page=1&count=15&sort_by=&sort_dir=desc&filter=",
-      responseResult_product_data: {}
+      responseResult_product_data: {},
+      checkedNames: [],
+      queryStringFilters: []
     };
   },
   components: {
@@ -86,8 +85,9 @@ export default {
     Products
   },
   mounted() {
+    // console.log(this.filterData.result.filters);
       axios
-      .get(this.api_url_product_data)
+      .get(this.api_url_product_data + this.$route.params.id)
       .then(response => {
         this.responseResult_product_data = response.data;
       })
@@ -95,27 +95,32 @@ export default {
         console.log(error);
       });
   },
-  methods: {
-      applyFilter(filterOptions) {
-          console.log(filterOptions);
-          this.selectedFiltersValueKey.push(filterOptions.value_key);
-          this.selectedFilterCode.push(filterOptions.code);
-          this.axiosFinalFilterOptions.push(this.selectedFilterCode + "~" + this.selectedFiltersValueKey);
-          if(this.selectedFiltersValueKey.length > 1) {
-              this.axiosFinalFilterOptions = [];
-              for(var i = 0; i < this.selectedFiltersValueKey.length; i++) {
-                  this.axiosFinalFilterOptions.push(this.selectedFilterCode[i] + "~" + this.selectedFiltersValueKey[i])
-              }
+  watch: {
+    checkedNames() {
+      if(this.checkedNames.length == 1) {
+        this.$route.params.id = "men-topwear-t-shirt&filter=" + this.checkedNames[0].code + "~" + this.checkedNames[0].value;
+        axios.get(this.api_url_product_data + this.$route.params.id).then((responseFilteredProductData) => {
+          this.responseResult_product_data = responseFilteredProductData.data;
+        })
+        this.$router.push({name: 'Home', params: this.$route.params})
+      } else {
+          this.axiosFinalFilterOptions = [];
+          this.queryStringFilters = [];
+          for(var i = 0; i < this.checkedNames.length; i++) {
+              this.axiosFinalFilterOptions.push(this.checkedNames[i].code + "~" + this.checkedNames[i].value)
           }
-          console.log(this.axiosFinalFilterOptions)
-          axios.get(this.api_url_product_data + this.axiosFinalFilterOptions).then((responseFilteredProductData) => {
-              this.responseResult_product_data = responseFilteredProductData.data;
-              console.log(this.responseResult_product_data);
-          }).catch((error) => {
-              console.log(error);
+          this.axiosFinalFilterOptions.forEach((result) => {
+            this.queryStringFilters.push(result)
           })
+          this.queryStringFilters = this.queryStringFilters.toString().replace(/,/gi, "|");
+          this.$route.params.id = "men-topwear-t-shirt&filter=" + this.queryStringFilters;
+          axios.get(this.api_url_product_data + this.$route.params.id).then((responseFilteredProductData) => {
+            this.responseResult_product_data = responseFilteredProductData.data;
+          })
+          this.$router.push({name: 'Home', params: this.$route.params})
       }
-  }
+    }
+  },
 };
 </script>
 
